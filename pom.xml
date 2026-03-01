@@ -25,7 +25,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lombok.version>1.18.42</lombok.version>
         <!-- Override vulnerable dependency versions -->
-        <tomcat.version>11.0.15</tomcat.version>
+        <tomcat.version>11.0.18</tomcat.version>
         <logback.version>1.5.25</logback.version>
     </properties>
 

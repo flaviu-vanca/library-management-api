@@ -77,4 +77,11 @@ public class Library {
         books.remove(book);
         book.setLibrary(null);
     }
+
+    @Override
+    public String toString() {
+        return """
+                Library{id=%d, name='%s', address='%s', phone='%s', email='%s', establishedDate=%s, createdAt=%s, updatedAt=%s}
+                """.formatted(id, name, address, phone, email, establishedDate, createdAt, updatedAt);
+    }
 }

@@ -18,28 +18,30 @@ public class LibraryManagementApplication {
     public static void main(String[] args) {
         SpringApplication.run(LibraryManagementApplication.class, args);
         
-        System.out.println("\n" +
-                "===========================================================\n" +
-                "   Library Management REST API - Successfully Started\n" +
-                "===========================================================\n" +
-                "   Application is running on: http://localhost:8080\n" +
-                "   H2 Console available at: http://localhost:8080/h2-console\n" +
-                "   \n" +
-                "   API Endpoints:\n" +
-                "   - GET    /api/libraries\n" +
-                "   - GET    /api/libraries/{id}\n" +
-                "   - POST   /api/libraries\n" +
-                "   - PUT    /api/libraries/{id}\n" +
-                "   - DELETE /api/libraries/{id}\n" +
-                "   - GET    /api/libraries/{id}/books\n" +
-                "   \n" +
-                "   - GET    /api/books\n" +
-                "   - GET    /api/books/{id}\n" +
-                "   - POST   /api/books\n" +
-                "   - PUT    /api/books/{id}\n" +
-                "   - DELETE /api/books/{id}\n" +
-                "   - GET    /api/books/by-publication-date\n" +
-                "   - GET    /api/books/by-acquisition-date\n" +
-                "===========================================================\n");
+        System.out.println("""
+                \
+                ===========================================================
+                   Library Management REST API - Successfully Started
+                ===========================================================
+                   Application is running on: http://localhost:8080
+                   H2 Console available at: http://localhost:8080/h2-console
+                  \s
+                   API Endpoints:
+                   - GET    /api/libraries
+                   - GET    /api/libraries/{id}
+                   - POST   /api/libraries
+                   - PUT    /api/libraries/{id}
+                   - DELETE /api/libraries/{id}
+                   - GET    /api/libraries/{id}/books
+                  \s
+                   - GET    /api/books
+                   - GET    /api/books/{id}
+                   - POST   /api/books
+                   - PUT    /api/books/{id}
+                   - DELETE /api/books/{id}
+                   - GET    /api/books/by-publication-date
+                   - GET    /api/books/by-acquisition-date
+                ===========================================================\
+               \s""");
     }
 }

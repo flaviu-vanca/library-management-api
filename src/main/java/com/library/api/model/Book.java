@@ -70,16 +70,8 @@ public class Book {
      */
     @Override
     public String toString() {
-        return "Book{" +
-                "id=" + id +
-                ", isbn='" + isbn + '\'' +
-                ", title='" + title + '\'' +
-                ", author='" + author + '\'' +
-                ", genre='" + genre + '\'' +
-                ", publicationDate=" + publicationDate +
-                ", acquisitionDate=" + acquisitionDate +
-                ", pages=" + pages +
-                ", libraryId=" + (library != null ? library.getId() : null) +
-                '}';
+        return """
+                Book{id=%d, isbn='%s', title='%s', author='%s', genre='%s', publicationDate=%s, acquisitionDate=%s, pages=%d, libraryId=%d}
+                """.formatted(id, isbn, title, author, genre, publicationDate, acquisitionDate, pages, library != null ? library.getId() : null);
     }
 }

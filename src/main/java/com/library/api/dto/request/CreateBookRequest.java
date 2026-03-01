@@ -17,7 +17,8 @@ import java.time.LocalDate;
 public class CreateBookRequest {
 
     @NotBlank(message = "ISBN is required")
-    @Pattern(regexp = "^(97[89])?\\d{10,13}$", message = "ISBN must be 10 or 13 digits, optionally starting with 978 or 979")
+    @Pattern(regexp = "^(97[89])?\\d{10,13}$",
+             message = "ISBN must be 10 or 13 digits, optionally starting with 978 or 979")
     private String isbn;
 
     @NotBlank(message = "Title is required")
