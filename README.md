@@ -35,6 +35,28 @@ mvn clean install
 mvn spring-boot:run
 ```
 
+### ✅ Test Commands
+
+Default test run on Java 25:
+
+```bash
+mvn test
+```
+
+Coverage run for the assignment screencast:
+
+```powershell
+$env:JAVA_HOME='C:\Users\skety\.sdkman\candidates\java\21.0.9-oracle'
+$env:PATH="$env:JAVA_HOME\bin;$env:PATH"
+mvn clean -Pcoverage-java21 test
+```
+
+Coverage report output:
+
+```text
+target/site/jacoco/index.html
+```
+
 ### 🌐 Local URLs
 
 - API base URL: `http://localhost:8080`
