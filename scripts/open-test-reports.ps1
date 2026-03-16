@@ -3,8 +3,6 @@ $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $paths = @(
     (Join-Path $projectRoot "target\karate-reports\karate-summary.html"),
-    (Join-Path $projectRoot "target\karate-reports\karate.books.html"),
-    (Join-Path $projectRoot "target\karate-reports\karate.libraries.html"),
     (Join-Path $projectRoot "target\site\jacoco\index.html")
 )
 

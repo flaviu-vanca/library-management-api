@@ -24,16 +24,4 @@ public class KarateRunner {
         System.setProperty("server.port", String.valueOf(port));
         return Karate.run("classpath:karate").relativeTo(getClass());
     }
-
-    @Karate.Test
-    Karate testLibraries() {
-        System.setProperty("server.port", String.valueOf(port));
-        return Karate.run("classpath:karate/libraries.feature").relativeTo(getClass());
-    }
-
-    @Karate.Test
-    Karate testBooks() {
-        System.setProperty("server.port", String.valueOf(port));
-        return Karate.run("classpath:karate/books.feature").relativeTo(getClass());
-    }
 }

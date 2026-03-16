@@ -111,8 +111,6 @@ powershell -ExecutionPolicy Bypass -File .\scripts\open-test-reports.ps1
 This opens:
 
 - `target/karate-reports/karate-summary.html`
-- `target/karate-reports/karate.books.html`
-- `target/karate-reports/karate.libraries.html`
 - `target/site/jacoco/index.html`
 
 ## 📜 Helper Scripts
@@ -120,7 +118,7 @@ This opens:
 | Script | Purpose |
 |--------|---------|
 | `scripts/run-screencast-demo.ps1` | Finds a local Java 21 installation, runs the coverage-compatible test suite, writes the console output to `coverage-test-run.log`, and regenerates the JaCoCo report for the screencast. |
-| `scripts/open-test-reports.ps1` | Opens the generated Karate HTML reports and the JaCoCo coverage report in the browser after the coverage run finishes. |
+| `scripts/open-test-reports.ps1` | Opens the combined Karate summary report and the JaCoCo coverage report in the browser after the coverage run finishes. |
 
 ### 🌐 Local URLs
 
@@ -204,4 +202,3 @@ Additional artifacts:
 ## 📄 License
 
 Educational project for Microservices Architecture coursework.
-
