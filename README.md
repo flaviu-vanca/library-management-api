@@ -115,6 +115,13 @@ This opens:
 - `target/karate-reports/karate.libraries.html`
 - `target/site/jacoco/index.html`
 
+## 📜 Helper Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/run-screencast-demo.ps1` | Finds a local Java 21 installation, runs the coverage-compatible test suite, writes the console output to `coverage-test-run.log`, and regenerates the JaCoCo report for the screencast. |
+| `scripts/open-test-reports.ps1` | Opens the generated Karate HTML reports and the JaCoCo coverage report in the browser after the coverage run finishes. |
+
 ### 🌐 Local URLs
 
 - API base URL: `http://localhost:8080`
