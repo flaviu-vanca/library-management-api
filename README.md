@@ -31,6 +31,7 @@ This project demonstrates:
 - Java 25 for normal development and default test runs
 - Java 21 if you want to generate the JaCoCo coverage report
 - Maven 3.9+
+- Docker Desktop for SonarQube, the webhook relay, and local container deployment
 
 ### ▶️ Run Locally
 
@@ -38,6 +39,121 @@ This project demonstrates:
 mvn clean install
 mvn spring-boot:run
 ```
+
+## 🔁 Jenkins CI/CD Setup
+
+This repository is now wired to use your existing Jenkins instance on:
+
+- Jenkins on `http://localhost:8080`
+- SonarQube on `http://localhost:9000`
+- Deployed application on `http://localhost:8082`
+
+Why the app runs on `8082` in CI/CD mode:
+
+- your Jenkins already uses `http://localhost:8080`
+- the deployed app container therefore publishes to `8082` to avoid a port clash
+- the application still listens on `8080` inside its own container
+
+### Stack files
+
+- `compose.yaml`: SonarQube, PostgreSQL, webhook relay
+- `Jenkinsfile`: full pipeline definition for the existing Jenkins on `8080`
+- `Dockerfile`: runtime image for the Spring Boot application
+- `scripts/start-cicd-stack.ps1`: start SonarQube and the webhook relay
+- `scripts/stop-cicd-stack.ps1`: stop SonarQube and the webhook relay
+
+### Start the supporting services
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start-cicd-stack.ps1
+```
+
+This starts:
+
+- SonarQube
+- PostgreSQL for SonarQube
+- the optional webhook relay
+
+It does not start Jenkins. Jenkins is expected to already be running on your machine.
+
+The stack expects Docker Desktop to be running in Linux container mode.
+
+### Configure the Jenkins job
+
+Create a Jenkins Pipeline job on your existing Jenkins:
+
+1. Open `http://localhost:8080`
+2. Create a new item of type `Pipeline`
+3. In the job configuration:
+   - choose `Pipeline script from SCM`
+   - set `SCM` to `Git`
+   - set repository URL to `https://github.com/flaviu-vanca/library-management-api.git`
+   - set the branch to `*/main`
+   - set `Script Path` to `Jenkinsfile`
+4. Save the job
+5. Run the job once manually so Jenkins loads the `Jenkinsfile` and registers the `githubPush()` trigger
+
+The pipeline definition itself lives in this repository and Jenkins will load it from source control.
+
+### Recommended Jenkins plugins
+
+Install these on your Jenkins controller before creating the job:
+
+- Git plugin
+- Pipeline plugin
+- GitHub plugin
+- JUnit plugin
+
+The current `Jenkinsfile` avoids extra report-publisher plugins and stores the coverage and Karate HTML outputs as archived build artifacts instead.
+
+### Real GitHub push trigger
+
+Copy `.env.example` to `.env` and set:
+
+- `SMEE_URL=https://smee.io/<your-channel>`
+
+To demonstrate an actual push-triggered build from GitHub to local Jenkins:
+
+1. Start the supporting services with `scripts/start-cicd-stack.ps1`
+2. In GitHub, add a webhook pointing to the same `SMEE_URL`
+3. In Jenkins, make sure the job is configured and the GitHub webhook trigger is enabled
+4. Push a small commit to GitHub
+5. The relay forwards the webhook to `http://host.docker.internal:8080/github-webhook/`
+6. Jenkins starts the pipeline automatically
+
+If `SMEE_URL` is blank, the webhook relay stays idle and you can still trigger the pipeline manually from Jenkins UI.
+
+### Pipeline stages
+
+The Jenkins pipeline is intentionally aligned with the assignment brief:
+
+1. Checkout from GitHub
+2. Build and verify on Java 25
+3. Coverage and static analysis on Java 21
+4. Archive the packaged JAR
+5. Build the Docker image
+6. Deploy the container locally
+
+### Quality gates
+
+The pipeline enforces two quality checks automatically:
+
+- test suite must pass
+- line coverage must stay at or above `60%` in the Java 21 coverage run
+
+SonarQube analysis is also executed during the coverage stage so you can show static analysis evidence in the report and screencast.
+
+### Jenkins host assumptions
+
+The `Jenkinsfile` is written for a Windows-hosted Jenkins node and expects:
+
+- Maven available on the Jenkins machine
+- Docker CLI available on the Jenkins machine
+- Docker Desktop running when the deployment stages execute
+- Java 25 installed
+- Java 21 installed for the coverage run
+
+The helper scripts under `scripts/ci-*.ps1` resolve the local JDK installations automatically and use a workspace-local Maven repository to avoid permission issues.
 
 ### ✅ Testing Procedure
 
@@ -122,8 +238,9 @@ This opens:
 
 ### 🌐 Local URLs
 
-- API base URL: `http://localhost:8080`
-- H2 console: `http://localhost:8080/h2-console`
+- Local development API base URL: `http://localhost:8080`
+- Local development H2 console: `http://localhost:8080/h2-console`
+- CI/CD deployed app URL: `http://localhost:8082`
   - JDBC URL: `jdbc:h2:mem:librarydb`
   - Username: `sa`
   - Password: (blank)
