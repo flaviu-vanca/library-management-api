@@ -53,14 +53,13 @@ pipeline {
 
         stage('Coverage and Static Analysis - Java 21') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'sonarqube-admin', usernameVariable: 'SONAR_ADMIN_USER', passwordVariable: 'SONAR_ADMIN_PASSWORD')]) {
+                withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
                     bat '''
                         @echo on
                         powershell -NoProfile -ExecutionPolicy Bypass -File ".\\scripts\\ci-sonar-java21.ps1" ^
                           -SonarUrl "%SONAR_URL%" ^
                           -ProjectKey "%SONAR_PROJECT_KEY%" ^
-                          -SonarAdminUser "%SONAR_ADMIN_USER%" ^
-                          -SonarAdminPassword "%SONAR_ADMIN_PASSWORD%"
+                          -SonarToken "%SONAR_TOKEN%"
                     '''
                 }
             }
