@@ -16,8 +16,6 @@ pipeline {
         APP_PORT = '8082'
         SONAR_URL = 'http://localhost:9000'
         SONAR_PROJECT_KEY = 'library-management-api'
-        SONAR_ADMIN_USER = 'admin'
-        SONAR_ADMIN_PASSWORD = 'admin'
     }
 
     stages {
@@ -55,14 +53,16 @@ pipeline {
 
         stage('Coverage and Static Analysis - Java 21') {
             steps {
-                bat '''
-                    @echo on
-                    powershell -NoProfile -ExecutionPolicy Bypass -File ".\\scripts\\ci-sonar-java21.ps1" ^
-                      -SonarUrl "%SONAR_URL%" ^
-                      -ProjectKey "%SONAR_PROJECT_KEY%" ^
-                      -SonarAdminUser "%SONAR_ADMIN_USER%" ^
-                      -SonarAdminPassword "%SONAR_ADMIN_PASSWORD%"
-                '''
+                withCredentials([usernamePassword(credentialsId: 'sonarqube-admin', usernameVariable: 'SONAR_ADMIN_USER', passwordVariable: 'SONAR_ADMIN_PASSWORD')]) {
+                    bat '''
+                        @echo on
+                        powershell -NoProfile -ExecutionPolicy Bypass -File ".\\scripts\\ci-sonar-java21.ps1" ^
+                          -SonarUrl "%SONAR_URL%" ^
+                          -ProjectKey "%SONAR_PROJECT_KEY%" ^
+                          -SonarAdminUser "%SONAR_ADMIN_USER%" ^
+                          -SonarAdminPassword "%SONAR_ADMIN_PASSWORD%"
+                    '''
+                }
             }
             post {
                 always {
@@ -96,7 +96,7 @@ pipeline {
 
         stage('Deploy Locally') {
             when {
-                branch 'main'
+                branch 'master'
             }
             steps {
                 bat '''
