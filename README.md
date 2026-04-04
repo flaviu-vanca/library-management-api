@@ -95,16 +95,38 @@ Create a Jenkins Pipeline job on your existing Jenkins:
 
 The pipeline definition itself lives in this repository and Jenkins will load it from source control.
 
-### Recommended Jenkins plugins
+### Required Jenkins configuration (preflight-validated)
 
-Install these on your Jenkins controller before creating the job:
+The `Preflight Validation` stage in `Jenkinsfile` fails early with clear messages if required Jenkins configuration is missing.
+
+#### Global tools
+
+Configure these in **Manage Jenkins -> Tools** with the exact names below:
+
+- JDK named `JDK25` (used for default build/test/package stages)
+- JDK named `JDK21` (used for coverage + Sonar stage)
+- Maven named `Maven3`
+
+#### Credentials
+
+Configure this in **Manage Jenkins -> Credentials**:
+
+- Secret text credential with ID `sonarqube-token`
+
+#### Plugins used by the pipeline
+
+Install/enable these before running the job:
 
 - Git plugin
 - Pipeline plugin
 - GitHub plugin
 - JUnit plugin
+- Maven Integration plugin
+- Credentials Binding plugin
+- Docker Pipeline plugin
+- HTTP Request plugin
 
-The current `Jenkinsfile` avoids extra report-publisher plugins and stores the coverage and Karate HTML outputs as archived build artifacts instead.
+The pipeline archives JaCoCo and Karate HTML outputs as build artifacts instead of requiring extra report publisher plugins.
 
 ### Real GitHub push trigger
 
@@ -153,7 +175,7 @@ The `Jenkinsfile` is written for a Windows-hosted Jenkins node and expects:
 - Java 25 installed
 - Java 21 installed for the coverage run
 
-The helper scripts under `scripts/ci-*.ps1` resolve the local JDK installations automatically and use a workspace-local Maven repository to avoid permission issues.
+If these are missing, the `Preflight Validation` stage stops the pipeline before the main build stages run.
 
 ### ✅ Testing Procedure
 
