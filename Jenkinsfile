@@ -114,7 +114,7 @@ Install/enable the HTTP Request plugin.""")
                 maven "${MAVEN_TOOL}"
             }
             steps {
-                sh 'mvn -B -ntp clean verify'
+                bat 'mvn -B -ntp clean verify'
             }
             post {
                 always {
@@ -131,11 +131,11 @@ Install/enable the HTTP Request plugin.""")
             }
             steps {
                 withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-                    sh """mvn -B -ntp -Pcoverage-java21 clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-                        -Dsonar.host.url=${env.SONAR_URL} \
-                        -Dsonar.token=${env.SONAR_TOKEN} \
-                        -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} \
-                        -Dsonar.projectName="Library Management API" \
+                    bat """mvn -B -ntp -Pcoverage-java21 clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar ^
+                        -Dsonar.host.url=%SONAR_URL% ^
+                        -Dsonar.token=%SONAR_TOKEN% ^
+                        -Dsonar.projectKey=%SONAR_PROJECT_KEY% ^
+                        -Dsonar.projectName="Library Management API" ^
                         -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml"""
                 }
             }
@@ -152,7 +152,7 @@ Install/enable the HTTP Request plugin.""")
                 maven "${MAVEN_TOOL}"
             }
             steps {
-                sh 'mvn -B -ntp -DskipTests clean package'
+                bat 'mvn -B -ntp -DskipTests clean package'
             }
             post {
                 success {
