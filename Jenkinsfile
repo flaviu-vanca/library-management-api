@@ -23,9 +23,15 @@ pipeline {
 
     stages {
 
-        stage('Preflight Validation') {
+        stage('🔍 Preflight Validation') {
             steps {
                 script {
+                    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                    echo "📚 Library Management API - CI/CD Pipeline"
+                    echo "👤 Triggered by: Flaviu Vanca"
+                    echo "🔗 Build: ${BUILD_NUMBER}"
+                    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                    echo ""
                     def missingTools = []
                     def requiredTools = [
                         [label: 'JDK 25', name: env.JDK25_TOOL],
@@ -60,9 +66,9 @@ Details: ${ex.message}""")
                     }
 
                     try {
-                        def _dockerRef = docker
+                        docker
                         echo "Docker Pipeline DSL is available."
-                    } catch (MissingPropertyException ex) {
+                    } catch (MissingPropertyException ignored) {
                         error("""Pipeline preflight failed: Docker Pipeline support is unavailable.
 Install/enable the Docker Pipeline plugin (global variable: docker).""")
                     }
@@ -76,20 +82,20 @@ Install/enable the Docker Pipeline plugin (global variable: docker).""")
                             quiet: true
                         )
                         echo "HTTP Request step is available."
-                    } catch (NoSuchMethodError ex) {
+                    } catch (NoSuchMethodError ignored) {
                         error("""Pipeline preflight failed: httpRequest step is unavailable.
 Install/enable the HTTP Request plugin.""")
-                    } catch (MissingMethodException ex) {
+                    } catch (MissingMethodException ignored) {
                         error("""Pipeline preflight failed: httpRequest step is unavailable.
 Install/enable the HTTP Request plugin.""")
-                    } catch (Exception ex) {
+                    } catch (Exception ignored) {
                         echo "HTTP Request step is available."
                     }
                 }
             }
         }
 
-        stage('Verify Tooling') {
+        stage('⚙️ Verify Tooling') {
             tools {
                 jdk "${JDK25_TOOL}"
                 maven "${MAVEN_TOOL}"
@@ -102,18 +108,13 @@ Install/enable the HTTP Request plugin.""")
             }
         }
 
-        stage('Build and Test - Java 25') {
+        stage('🧪 Build and Test - Java 25') {
             tools {
                 jdk "${JDK25_TOOL}"
                 maven "${MAVEN_TOOL}"
             }
             steps {
-                step([
-                    $class: 'hudson.tasks.Maven',
-                    mavenName: "${env.MAVEN_TOOL}",
-                    targets: '-B -ntp clean verify',
-                    usePrivateRepository: true
-                ])
+                sh 'mvn -B -ntp clean verify'
             }
             post {
                 always {
@@ -123,19 +124,19 @@ Install/enable the HTTP Request plugin.""")
             }
         }
 
-        stage('Coverage and Static Analysis - Java 21') {
+        stage('📊 Coverage and Static Analysis - Java 21') {
             tools {
                 jdk "${JDK21_TOOL}"
                 maven "${MAVEN_TOOL}"
             }
             steps {
                 withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-                    step([
-                        $class: 'hudson.tasks.Maven',
-                        mavenName: "${env.MAVEN_TOOL}",
-                        targets: "-B -ntp -Pcoverage-java21 clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=${env.SONAR_URL} -Dsonar.token=${env.SONAR_TOKEN} -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} -Dsonar.projectName=\"Library Management API\" -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml",
-                        usePrivateRepository: true
-                    ])
+                    sh """mvn -B -ntp -Pcoverage-java21 clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                        -Dsonar.host.url=${env.SONAR_URL} \
+                        -Dsonar.token=${env.SONAR_TOKEN} \
+                        -Dsonar.projectKey=${env.SONAR_PROJECT_KEY} \
+                        -Dsonar.projectName="Library Management API" \
+                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml"""
                 }
             }
             post {
@@ -145,18 +146,13 @@ Install/enable the HTTP Request plugin.""")
             }
         }
 
-        stage('Package Artifact - Java 25') {
+        stage('📦 Package Artifact - Java 25') {
             tools {
                 jdk "${JDK25_TOOL}"
                 maven "${MAVEN_TOOL}"
             }
             steps {
-                step([
-                    $class: 'hudson.tasks.Maven',
-                    mavenName: "${env.MAVEN_TOOL}",
-                    targets: '-B -ntp -DskipTests clean package',
-                    usePrivateRepository: true
-                ])
+                sh 'mvn -B -ntp -DskipTests clean package'
             }
             post {
                 success {
@@ -165,7 +161,7 @@ Install/enable the HTTP Request plugin.""")
             }
         }
 
-        stage('Build Docker Image') {
+        stage('🐳 Build Docker Image') {
             steps {
                 script {
                     def image = docker.build("${env.APP_IMAGE}:${env.BUILD_NUMBER}")
@@ -174,7 +170,7 @@ Install/enable the HTTP Request plugin.""")
             }
         }
 
-        stage('Deploy Locally') {
+        stage('🚀 Deploy Locally') {
             when {
                 branch 'master'
             }

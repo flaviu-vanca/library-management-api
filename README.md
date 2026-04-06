@@ -130,20 +130,44 @@ The pipeline archives JaCoCo and Karate HTML outputs as build artifacts instead 
 
 ### Real GitHub push trigger
 
-Copy `.env.example` to `.env` and set:
+To demonstrate an actual push-triggered build from GitHub to local Jenkins, you need a webhook relay service running. Choose one of the following options:
 
-- `SMEE_URL=https://smee.io/<your-channel>`
+#### Option 1: ngrok (current setup)
 
-To demonstrate an actual push-triggered build from GitHub to local Jenkins:
+1. Install ngrok from https://ngrok.com/
+2. Open a terminal (PowerShell, CMD, or bash) and start ngrok to tunnel to Jenkins:
+   ```bash
+   ngrok http 8080
+   ```
+   This command creates a tunnel from ngrok's public URL to your local Jenkins on `localhost:8080`.
+3. Copy the forwarding URL from the ngrok terminal output (e.g., `https://roomier-kenny-unsystematizing.ngrok-free.dev`)
+4. In GitHub repository settings → Webhooks, add a webhook:
+   - Payload URL: `{ngrok-url}/github-webhook/`
+   - Content type: `application/json`
+   - Events: Push events
+5. In Jenkins, make sure the job is configured and the GitHub webhook trigger is enabled
+6. Push a commit to GitHub
+7. Jenkins automatically triggers the pipeline
 
-1. Start the supporting services with `scripts/start-cicd-stack.ps1`
-2. In GitHub, add a webhook pointing to the same `SMEE_URL`
-3. In Jenkins, make sure the job is configured and the GitHub webhook trigger is enabled
-4. Push a small commit to GitHub
-5. The relay forwards the webhook to `http://host.docker.internal:8080/github-webhook/`
-6. Jenkins starts the pipeline automatically
+**Important:** 
+- Keep the ngrok terminal running for the webhook to work
+- The free tier generates a new URL on restart, so you'll need to update the GitHub webhook URL if ngrok restarts
+- Do not close the ngrok terminal window while you need the webhook functionality
 
-If `SMEE_URL` is blank, the webhook relay stays idle and you can still trigger the pipeline manually from Jenkins UI.
+#### Option 2: smee.io (alternative)
+
+If you prefer smee.io instead:
+
+1. Create a channel at https://smee.io/
+2. Start the smee relay:
+   ```bash
+   npm install -g smee-client
+   smee -u https://smee.io/{your-channel} -t http://localhost:8080/github-webhook/
+   ```
+3. In GitHub repository settings → Webhooks, add a webhook pointing to your smee channel
+4. Keep the smee terminal or browser tab open
+
+**Note:** Both ngrok and smee.io require the relay service to be actively running to forward webhooks to your local Jenkins.
 
 ### Pipeline stages
 
