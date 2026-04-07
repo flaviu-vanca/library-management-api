@@ -4,7 +4,7 @@
 
 <p align="center">
   <img alt="Java" src="https://img.shields.io/badge/Java-25-orange?logo=openjdk" />
-  <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-3.5.7-brightgreen?logo=springboot" />
+  <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen?logo=springboot" />
   <img alt="Build" src="https://img.shields.io/badge/Build-Maven-blue?logo=apachemaven" />
   <img alt="Docker" src="https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker" />
   <img alt="CI" src="https://img.shields.io/badge/CI-Jenkins-D24939?logo=jenkins&logoColor=white" />
@@ -56,7 +56,7 @@ The domain model is a classic **one-to-many** relationship: one `Library` contai
 - H2 in-memory database with schema and seed data on startup
 - Dockerised runtime image (Eclipse Temurin 25 JRE)
 - Jenkins declarative pipeline: build → test → coverage → SonarQube → package → deploy
-- JaCoCo code-coverage enforcement (≥ 60 % line coverage)
+- JaCoCo code-coverage reports (skipped by default on Java 25; enable with `-Djacoco.skip=false` on Java 21)
 - Karate end-to-end API tests executed as part of the Maven build
 
 ---
@@ -66,7 +66,7 @@ The domain model is a classic **one-to-many** relationship: one `Library` contai
 | Layer | Technology |
 |---|---|
 | Language | Java 25 |
-| Framework | Spring Boot 3.5.7 (Web, Data JPA, Validation) |
+| Framework | Spring Boot 4.0.2 (Web, Data JPA, Validation) |
 | Build | Maven 3.9+ |
 | Database | H2 (in-memory) |
 | Persistence | Spring Data JPA / Hibernate |
@@ -87,7 +87,7 @@ The domain model is a classic **one-to-many** relationship: one `Library` contai
 | Tool | Version / Notes |
 |---|---|
 | Java | **25** — default build, test, and package stages |
-| Java | **21** — required only for the JaCoCo HTML coverage report (`coverage-java21` Maven profile) |
+| Java | **21** — required only to generate JaCoCo HTML coverage report (`-Djacoco.skip=false`) |
 | Maven | 3.9+ |
 | Docker Desktop | Required for SonarQube, the webhook relay, and local container deployment. Must run in **Linux containers** mode. |
 
@@ -200,7 +200,7 @@ The project ships with a Jenkins declarative pipeline (`Jenkinsfile`) designed f
 | Preflight Validation | — | Validates required tools, credentials, and plugins before any work begins |
 | Verify Tooling | 25 | Confirms Maven and JDK resolution |
 | Build and Test | 25 | `mvn clean verify` — compiles, runs JUnit + Karate tests, archives results |
-| Coverage + SonarQube | 21 | `mvn -Pcoverage-java21 clean verify sonar:sonar` — generates JaCoCo report and pushes to SonarQube |
+| Coverage + SonarQube | 21 | `mvn -Djacoco.skip=false clean verify sonar:sonar` — generates JaCoCo report and pushes to SonarQube |
 | Package Artifact | 25 | `mvn -DskipTests clean package` — produces the deployable JAR |
 | Build Docker Image | — | Builds and tags the Docker image |
 | Deploy Locally | — | Runs the container on port `8082` (master branch only), health-checks with retry |
@@ -249,7 +249,7 @@ To trigger builds on push, expose your local Jenkins with [ngrok](https://ngrok.
 
 ## Testing
 
-Tests are executed in two modes due to JaCoCo 0.8.12 not fully supporting Java 25 class files.
+Tests are executed in two modes because JaCoCo 0.8.12 does not fully support Java 25 class files; JaCoCo is therefore skipped by default.
 
 ### Default test run (Java 25)
 
@@ -262,7 +262,7 @@ mvn test
 ```powershell
 $env:JAVA_HOME = 'C:\Path\To\Your\JDK-21'
 $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
-mvn clean -Pcoverage-java21 test
+mvn clean -Djacoco.skip=false test
 ```
 
 Generated outputs:

@@ -131,7 +131,7 @@ Install/enable the HTTP Request plugin.""")
             }
             steps {
                 withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-                    bat """mvn -B -ntp -Pcoverage-java21 clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar ^
+                    bat """mvn -B -ntp -Djacoco.skip=false clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar ^
                         -Dsonar.host.url=%SONAR_URL% ^
                         -Dsonar.token=%SONAR_TOKEN% ^
                         -Dsonar.projectKey=%SONAR_PROJECT_KEY% ^
