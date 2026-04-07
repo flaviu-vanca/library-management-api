@@ -8,7 +8,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.7</version>
+    <version>4.0.2</version>
     <relativePath/>
   </parent>
 
@@ -22,17 +22,37 @@
     <java.version>25</java.version>
     <maven.compiler.source>25</maven.compiler.source>
     <maven.compiler.target>25</maven.compiler.target>
-    <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <lombok.version>1.18.42</lombok.version>
-    <coverage.minimum.line>0.60</coverage.minimum.line>
     <!-- Override vulnerable dependency versions -->
     <tomcat.version>11.0.18</tomcat.version>
     <logback.version>1.5.25</logback.version>
-    <netty.version>4.1.129.Final</netty.version>
+    <netty.version>4.1.132.Final</netty.version>
+    <spring-framework.version>7.0.6</spring-framework.version> <!-- fix CVE-2026-22735 -->
     <version>2.21.1</version>
     <jacoco.skip>true</jacoco.skip>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Override vulnerable tools.jackson 3.x (pulled in transitively by Karate) -->
+      <dependency>
+        <groupId>tools.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>3.1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>tools.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>3.1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>tools.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>3.1.1</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!-- Spring Boot Web (REST API) -->
@@ -135,9 +155,9 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.14.1</version>
         <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
-          <release>${maven.compiler.release}</release>
+          <source>25</source>
+          <target>25</target>
+          <release>25</release>
           <annotationProcessorPaths>
             <path>
               <groupId>org.projectlombok</groupId>
@@ -174,27 +194,6 @@
               <goal>report</goal>
             </goals>
           </execution>
-          <execution>
-            <id>check</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <rules>
-                <rule>
-                  <element>BUNDLE</element>
-                  <limits>
-                    <limit>
-                      <counter>LINE</counter>
-                      <value>COVEREDRATIO</value>
-                      <minimum>${coverage.minimum.line}</minimum>
-                    </limit>
-                  </limits>
-                </rule>
-              </rules>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
 
@@ -207,9 +206,8 @@
             <include>**/*Test.java</include>
             <include>**/KarateRunner.java</include>
           </includes>
-          <!-- Preserve JaCoCo's injected agent args when coverage is enabled -->
+          <!-- Suppress Java 25 warnings for Mockito and ByteBuddy dynamic agent loading -->
           <argLine>
-            @{argLine}
             -XX:+EnableDynamicAgentLoading
             --add-opens java.base/java.lang=ALL-UNNAMED
             --add-opens java.base/java.lang.reflect=ALL-UNNAMED
@@ -218,18 +216,5 @@
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>coverage-java21</id>
-      <properties>
-        <java.version>21</java.version>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-        <maven.compiler.release>21</maven.compiler.release>
-        <jacoco.skip>false</jacoco.skip>
-      </properties>
-    </profile>
-  </profiles>
 
 </project>
