@@ -1,240 +1,279 @@
-# 📚 Library Management REST API
+# Library Management API
+
+> RESTful API for managing libraries and books — built with Spring Boot, containerised with Docker, and validated by a Jenkins CI/CD pipeline.
 
 <p align="center">
-  <a href="https://github.com/flaviu-vanca/library-management-api">
-    <img alt="GitHub repo" src="https://img.shields.io/badge/repo-library--management--api-24292e?logo=github&logoColor=white" />
-  </a>
-  <img alt="Java" src="https://img.shields.io/badge/Java-25-007396?logo=openjdk&logoColor=white" />
-  <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-3.5.7-6DB33F?logo=springboot&logoColor=white" />
-  <img alt="Maven" src="https://img.shields.io/badge/Maven-3.9+-C71A36?logo=apachemaven&logoColor=white" />
-  <img alt="Database" src="https://img.shields.io/badge/DB-H2-1f6feb?logo=databricks&logoColor=white" />
-  <img alt="Tests" src="https://img.shields.io/badge/Tests-JUnit%205%20%7C%20Mockito%20%7C%20Karate-0B7285" />
+  <img alt="Java" src="https://img.shields.io/badge/Java-25-orange?logo=openjdk" />
+  <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-3.5.7-brightgreen?logo=springboot" />
+  <img alt="Build" src="https://img.shields.io/badge/Build-Maven-blue?logo=apachemaven" />
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker" />
+  <img alt="CI" src="https://img.shields.io/badge/CI-Jenkins-D24939?logo=jenkins&logoColor=white" />
+  <img alt="Quality" src="https://img.shields.io/badge/Quality-SonarQube-4E9BCD?logo=sonarqube&logoColor=white" />
   <img alt="Coverage" src="https://img.shields.io/badge/Coverage-JaCoCo-BD1E59" />
-</p>
-
-<p align="center">
-  <b>RESTful API for library management built with Spring Boot.</b><br/>
-  Entity relationships • DTO-based contracts • Pagination • Date filtering • Centralized error handling
-</p>
-
-<p align="center">
-  <a href="#-project-scope">🎯 Scope</a> ·
-  <a href="#-technology-stack">🛠️ Stack</a> ·
-  <a href="#-quick-start">🚀 Quick Start</a> ·
-  <a href="#-api-overview">🔌 API</a> ·
-  <a href="#-cicd-with-jenkins">🤖 CI/CD</a> ·
-  <a href="#-testing">🧪 Testing</a> ·
-  <a href="#-error-handling">⚠️ Errors</a> ·
-  <a href="#-documentation-map">🗺️ Docs</a> ·
-  <a href="#-development-notes">📝 Notes</a> ·
-  <a href="#-license">📄 License</a>
+  <img alt="Testing" src="https://img.shields.io/badge/Tests-JUnit%205%20%7C%20Karate-0B7285" />
+  <img alt="Database" src="https://img.shields.io/badge/DB-H2%20In--Memory-1f6feb" />
+  <img alt="License" src="https://img.shields.io/badge/License-Educational-lightgrey" />
 </p>
 
 ---
 
-## 🎯 Project Scope
+## Table of Contents
 
-This project demonstrates common backend API patterns and best practices:
-
-- **Domain model & relationships:** one-to-many model (**one Library → many Books**)
-- **Clean API contracts:** request/response **DTOs** separated from persistence entities
-- **CRUD operations:** libraries and books
-- **Pagination & sorting:** for list endpoints
-- **Date-based filtering:** publication and acquisition date filters
-- **Consistent error responses:** centralized exception handling with structured JSON payloads
-
----
-
-## 🛠️ Technology Stack
-
-- **Java 25**
-- **Spring Boot 3.5.7**
-- Spring Web, Spring Data JPA
-- H2 in-memory database
-- Maven
-- Lombok
-- Testing: JUnit 5, Mockito, Karate
-- Quality: JaCoCo
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running Locally](#running-locally)
+- [API Reference](#api-reference)
+- [Project Structure](#project-structure)
+- [CI/CD Pipeline](#cicd-pipeline)
+- [Testing](#testing)
+- [Error Handling](#error-handling)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## 🚀 Quick Start
+## Overview
 
-### 📋 Prerequisites
+Library Management API is a Spring Boot REST API that demonstrates production-grade backend patterns: layered architecture (Controller → Service → Repository), DTO-based request/response contracts, pagination and sorting, date-range filtering, centralised exception handling, and a full CI/CD pipeline driven by Jenkins, SonarQube, and Docker.
 
-- **Java 25** (default development and test runs)
-- **Java 21** (required to generate the JaCoCo HTML report)
-- **Maven 3.9+**
-- **Docker Desktop** (for SonarQube, the webhook relay, and local container deployment)
+The domain model is a classic **one-to-many** relationship: one `Library` contains many `Book` records.
 
-### ▶️ Run Locally
+---
+
+## Features
+
+- Full CRUD for both `Library` and `Book` resources
+- One-to-many entity relationship with cascading deletes
+- Request/response DTOs decoupled from JPA entities
+- Pagination and sorting on list endpoints
+- Date-based filtering (`by-publication-date`, `by-acquisition-date`)
+- Bean validation on all incoming requests
+- Centralised error responses via `GlobalExceptionHandler`
+- H2 in-memory database with schema and seed data on startup
+- Dockerised runtime image (Eclipse Temurin 25 JRE)
+- Jenkins declarative pipeline: build → test → coverage → SonarQube → package → deploy
+- JaCoCo code-coverage enforcement (≥ 60 % line coverage)
+- Karate end-to-end API tests executed as part of the Maven build
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Language | Java 25 |
+| Framework | Spring Boot 3.5.7 (Web, Data JPA, Validation) |
+| Build | Maven 3.9+ |
+| Database | H2 (in-memory) |
+| Persistence | Spring Data JPA / Hibernate |
+| Boilerplate reduction | Lombok |
+| Unit / Integration tests | JUnit 5, Mockito |
+| API tests | Karate (io.karatelabs 1.5.1) |
+| Coverage | JaCoCo 0.8.12 |
+| Static analysis | SonarQube (community edition) |
+| Containerisation | Docker (Eclipse Temurin 25 JRE base image) |
+| CI/CD | Jenkins declarative pipeline |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+| Tool | Version / Notes |
+|---|---|
+| Java | **25** — default build, test, and package stages |
+| Java | **21** — required only for the JaCoCo HTML coverage report (`coverage-java21` Maven profile) |
+| Maven | 3.9+ |
+| Docker Desktop | Required for SonarQube, the webhook relay, and local container deployment. Must run in **Linux containers** mode. |
+
+### Installation
 
 ```bash
+git clone https://github.com/flaviu-vanca/library-management-api.git
+cd library-management-api
 mvn clean install
+```
+
+### Running Locally
+
+```bash
 mvn spring-boot:run
 ```
 
+The API is available at `http://localhost:8080`.  
+The H2 console is available at `http://localhost:8080/h2-console`:
+
+| Setting | Value |
+|---|---|
+| JDBC URL | `jdbc:h2:mem:librarydb` |
+| Username | `sa` |
+| Password | *(blank)* |
+
 ---
 
-## 🤖 CI/CD with Jenkins
+## API Reference
 
-This repository is designed to work with a local CI/CD setup:
+### Libraries
 
-- Jenkins: `http://localhost:8080`
-- SonarQube: `http://localhost:9000`
-- Deployed application: `http://localhost:8082`
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/libraries` | List all libraries (paginated) |
+| `GET` | `/api/libraries/{id}` | Get a library by ID |
+| `POST` | `/api/libraries` | Create a library |
+| `PUT` | `/api/libraries/{id}` | Update a library |
+| `DELETE` | `/api/libraries/{id}` | Delete a library (cascades to books) |
+| `GET` | `/api/libraries/{id}/books` | List books belonging to a library |
 
-**Why the app runs on `8082` in CI/CD mode**
+### Books
 
-- Jenkins uses `http://localhost:8080`
-- the deployed app container publishes to **8082** to avoid a port conflict
-- the app still listens on **8080** inside its container
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/books` | List all books (paginated) |
+| `GET` | `/api/books/{id}` | Get a book by ID |
+| `POST` | `/api/books` | Create a book |
+| `PUT` | `/api/books/{id}` | Update a book |
+| `DELETE` | `/api/books/{id}` | Delete a book |
+| `GET` | `/api/books/by-publication-date` | Filter books by publication date range |
+| `GET` | `/api/books/by-acquisition-date` | Filter books by acquisition date range |
 
-### 📦 Stack files
+> Error payload examples are documented in [`docs/ERROR_RESPONSE_EXAMPLES.md`](docs/ERROR_RESPONSE_EXAMPLES.md).
 
-- `compose.yaml`: SonarQube, PostgreSQL, webhook relay
-- `Jenkinsfile`: pipeline definition (for Jenkins on `8080`)
-- `Dockerfile`: runtime image for the Spring Boot application
-- `scripts/start-cicd-stack.ps1`: start SonarQube and the webhook relay
-- `scripts/stop-cicd-stack.ps1`: stop SonarQube and the webhook relay
+---
 
-### 🧰 Start supporting services
+## Project Structure
+
+```text
+library-management-api/
+├── Dockerfile
+├── Jenkinsfile
+├── compose.yaml                          # SonarQube + PostgreSQL + webhook relay
+├── pom.xml
+├── docs/
+│   ├── PROJECT_STRUCTURE.md
+│   ├── ERROR_RESPONSE_EXAMPLES.md
+│   ├── LOMBOK_SETUP.md
+│   ├── architecture-diagram.drawio(.png)
+│   └── erd-diagram.drawio(.png)
+├── scripts/
+│   ├── start-cicd-stack.ps1              # Start SonarQube & webhook relay
+│   ├── stop-cicd-stack.ps1               # Stop the CI/CD support stack
+│   ├── run-screencast-demo.ps1           # Coverage run + log output
+│   └── open-test-reports.ps1            # Open Karate & JaCoCo reports
+└── src/
+    ├── main/
+    │   ├── java/com/library/api/
+    │   │   ├── controller/
+    │   │   ├── service/
+    │   │   ├── repository/
+    │   │   ├── model/
+    │   │   ├── dto/
+    │   │   │   ├── request/
+    │   │   │   └── response/
+    │   │   ├── mapper/
+    │   │   ├── exception/
+    │   │   └── util/
+    │   └── resources/
+    │       ├── application.properties
+    │       ├── schema.sql
+    │       └── data.sql
+    └── test/
+        └── java/com/library/api/
+```
+
+> See [`docs/PROJECT_STRUCTURE.md`](docs/PROJECT_STRUCTURE.md) for package and layer responsibilities.
+
+---
+
+## CI/CD Pipeline
+
+The project ships with a Jenkins declarative pipeline (`Jenkinsfile`) designed for a local CI/CD stack.
+
+### Pipeline stages
+
+| Stage | JDK | Description |
+|---|---|---|
+| Preflight Validation | — | Validates required tools, credentials, and plugins before any work begins |
+| Verify Tooling | 25 | Confirms Maven and JDK resolution |
+| Build and Test | 25 | `mvn clean verify` — compiles, runs JUnit + Karate tests, archives results |
+| Coverage + SonarQube | 21 | `mvn -Pcoverage-java21 clean verify sonar:sonar` — generates JaCoCo report and pushes to SonarQube |
+| Package Artifact | 25 | `mvn -DskipTests clean package` — produces the deployable JAR |
+| Build Docker Image | — | Builds and tags the Docker image |
+| Deploy Locally | — | Runs the container on port `8082` (master branch only), health-checks with retry |
+
+### Local URLs
+
+| Service | URL |
+|---|---|
+| Jenkins | `http://localhost:8080` |
+| SonarQube | `http://localhost:9000` |
+| Deployed app (CI/CD) | `http://localhost:8082` |
+
+> The app container exposes port `8082` on the host to avoid a conflict with Jenkins on `8080`.
+
+### Starting the support stack
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\start-cicd-stack.ps1
 ```
 
-This starts:
+This starts SonarQube, its PostgreSQL backend, and (optionally) the webhook relay via Docker Compose.
 
-- SonarQube
-- PostgreSQL (for SonarQube)
-- optional webhook relay
+### Configuring the Jenkins job
 
-> Jenkins is expected to already be running locally.
+1. Open `http://localhost:8080` → **New Item** → **Pipeline**
+2. Set **Pipeline script from SCM**, SCM = **Git**, repository URL = `https://github.com/flaviu-vanca/library-management-api.git`, branch = `*/master`, script path = `Jenkinsfile`
+3. Save and run once to register the `githubPush()` trigger
 
-The stack expects **Docker Desktop** to be running in **Linux containers** mode.
+**Required Jenkins global tools** (Manage Jenkins → Tools):
 
-### ⚙️ Configure the Jenkins job
+| Name | Purpose |
+|---|---|
+| `JDK25` | Build, test, and package stages |
+| `JDK21` | Coverage + SonarQube stage |
+| `Maven3` | All Maven stages |
 
-Create a Jenkins **Pipeline** job in your existing Jenkins instance:
+**Required credential** (Manage Jenkins → Credentials): `sonarqube-token` (Secret text)
 
-1. Open `http://localhost:8080`
-2. Create a new item of type **Pipeline**
-3. In the job configuration:
-   - choose **Pipeline script from SCM**
-   - set **SCM** to **Git**
-   - set repository URL to `https://github.com/flaviu-vanca/library-management-api.git`
-   - set the branch to `*/master`
-   - set **Script Path** to `Jenkinsfile`
-4. Save
-5. Run once manually so Jenkins loads the `Jenkinsfile` and registers the `githubPush()` trigger
+**Required plugins:** Git, Pipeline, GitHub, JUnit, Maven Integration, Credentials Binding, Docker Pipeline, HTTP Request
 
-### ✅ Required Jenkins configuration (preflight-validated)
+### GitHub webhook relay
 
-The `Preflight Validation` stage in `Jenkinsfile` fails early with clear messages if anything is missing.
-
-#### 🧱 Global tools
-
-Configure these in **Manage Jenkins → Tools** with the exact names below:
-
-- JDK named `JDK25` (default build/test/package stages)
-- JDK named `JDK21` (coverage + Sonar stage)
-- Maven named `Maven3`
-
-#### 🔐 Credentials
-
-Configure in **Manage Jenkins → Credentials**:
-
-- Secret text credential with ID `sonarqube-token`
-
-#### 🧩 Plugins used by the pipeline
-
-Install/enable before running the job:
-
-- Git plugin
-- Pipeline plugin
-- GitHub plugin
-- JUnit plugin
-- Maven Integration plugin
-- Credentials Binding plugin
-- Docker Pipeline plugin
-- HTTP Request plugin
-
-> The pipeline archives JaCoCo and Karate HTML outputs as build artifacts (no extra report publisher plugins required).
-
-### 🔁 Real GitHub push trigger
-
-To demonstrate push-triggered builds from GitHub to local Jenkins, run a webhook relay.
-
-#### Option 1: ngrok (current setup)
-
-1. Install ngrok from `https://ngrok.com/`
-2. Start a tunnel to Jenkins:
-   ```bash
-   ngrok http 8080
-   ```
-3. Copy the forwarding URL from ngrok output (example: `https://<your-id>.ngrok-free.dev`)
-4. In GitHub repository settings → **Webhooks**, add a webhook:
-   - Payload URL: `{ngrok-url}/github-webhook/`
-   - Content type: `application/json`
-   - Events: Push events
-5. Ensure the job is configured and the GitHub webhook trigger is enabled
-6. Push a commit
-
-**Important**
-
-- Keep the ngrok terminal running
-- Free tier URLs change on restart; update your GitHub webhook if ngrok restarts
-
-#### Option 2: smee.io (alternative)
-
-1. Create a channel at `https://smee.io/`
-2. Start the relay:
-   ```bash
-   npm install -g smee-client
-   smee -u https://smee.io/{your-channel} -t http://localhost:8080/github-webhook/
-   ```
-3. In GitHub repository settings → **Webhooks**, add a webhook pointing to your smee channel
-4. Keep the relay running
+To trigger builds on push, expose your local Jenkins with [ngrok](https://ngrok.com/) or [smee.io](https://smee.io/) and register the forwarded URL as a GitHub webhook (`{relay-url}/github-webhook/`).
 
 ---
 
-## 🧪 Testing
+## Testing
 
-The automated suite is executed in two different modes:
+Tests are executed in two modes due to JaCoCo 0.8.12 not fully supporting Java 25 class files.
 
-1. **Default verification run (Java 25)**
-2. **Coverage run (Java 21)** — required because **JaCoCo 0.8.12** does not fully support Java 25 class files.
-
-### 1) Default test run (Java 25)
+### Default test run (Java 25)
 
 ```bash
 mvn test
 ```
 
-### 2) Coverage run (Java 21)
+### Coverage run (Java 21)
 
 ```powershell
-$env:JAVA_HOME='C:\Path\To\Your\JDK-21'
-$env:PATH="$env:JAVA_HOME\bin;$env:PATH"
+$env:JAVA_HOME = 'C:\Path\To\Your\JDK-21'
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 mvn clean -Pcoverage-java21 test
 ```
 
 Generated outputs:
 
-```text
+```
 target/surefire-reports/
 target/karate-reports/
 target/site/jacoco/index.html
 ```
 
-### 3) Screencast helper script
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\run-screencast-demo.ps1
-```
-
-### 4) Open the generated HTML reports
+Open the HTML reports after the coverage run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\open-test-reports.ps1
@@ -242,88 +281,32 @@ powershell -ExecutionPolicy Bypass -File .\scripts\open-test-reports.ps1
 
 ---
 
-## 📜 Helper Scripts
+## Error Handling
 
-| Script | Purpose |
-|--------|---------|
-| `scripts/run-screencast-demo.ps1` | Locates a Java 21 installation, runs the coverage-compatible test suite, writes console output to `coverage-test-run.log`, and regenerates `target/site/jacoco/index.html`. |
-| `scripts/open-test-reports.ps1` | Opens the Karate summary report and the JaCoCo coverage report in the browser after the coverage run finishes. |
+All errors are returned as structured JSON payloads by `GlobalExceptionHandler`:
 
----
+| HTTP Status | Trigger |
+|---|---|
+| `400 Bad Request` | Validation failure, `BadRequestException`, `IllegalArgumentException` |
+| `404 Not Found` | `ResourceNotFoundException` |
+| `500 Internal Server Error` | Unhandled exceptions (fallback) |
 
-## 🌐 Local URLs
-
-- Development API base URL: `http://localhost:8080`
-- H2 console: `http://localhost:8080/h2-console`
-- CI/CD deployed app URL: `http://localhost:8082`
-  - JDBC URL: `jdbc:h2:mem:librarydb`
-  - Username: `sa`
-  - Password: (blank)
+See [`docs/ERROR_RESPONSE_EXAMPLES.md`](docs/ERROR_RESPONSE_EXAMPLES.md) for example payloads.
 
 ---
 
-## 🔌 API Overview
+## Contributing
 
-### 🏛️ Library endpoints
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m 'feat: add your feature'`
+4. Push to the branch: `git push origin feature/your-feature`
+5. Open a pull request against `master`
 
-- `GET /api/libraries`
-- `GET /api/libraries/{id}`
-- `POST /api/libraries`
-- `PUT /api/libraries/{id}`
-- `DELETE /api/libraries/{id}`
-- `GET /api/libraries/{id}/books`
-
-### 📖 Book endpoints
-
-- `GET /api/books`
-- `GET /api/books/{id}`
-- `POST /api/books`
-- `PUT /api/books/{id}`
-- `DELETE /api/books/{id}`
-- `GET /api/books/by-publication-date`
-- `GET /api/books/by-acquisition-date`
+Please ensure `mvn clean verify` passes before submitting a pull request.
 
 ---
 
-## ⚠️ Error Handling
-
-The API returns structured error payloads via `GlobalExceptionHandler`, including:
-
-- **404 Not Found** (`ResourceNotFoundException`)
-- **400 Bad Request** (`BadRequestException`, `MethodArgumentNotValidException`, `IllegalArgumentException`)
-- **500 Internal Server Error** (fallback)
-
-Examples are documented in `docs/ERROR_RESPONSE_EXAMPLES.md`.
-
----
-
-## 🗺️ Documentation Map
-
-To avoid duplication, each documentation file has a single responsibility:
-
-- `README.md`: project overview, quick start, high-level API map
-- `docs/PROJECT_STRUCTURE.md`: package layout and layer responsibilities
-- `docs/ERROR_RESPONSE_EXAMPLES.md`: canonical error payload examples
-- `docs/LOMBOK_SETUP.md`: IDE/Lombok setup and troubleshooting
-- `docs/SCREENCAST_ASSIGNMENT_SCRIPT.md`: assignment-aligned screencast flow
-- `docs/SCREENCAST_READ_ALOUD.md`: read-aloud narration for the screencast
-- `docs/SCREENCAST_SHOW_GUIDE.md`: optional presentation order for test evidence
-
-Additional artifacts:
-
-- `docs/architecture-diagram.drawio` and `docs/architecture-diagram.drawio.png`
-- `docs/erd-diagram.drawio` and `docs/erd-diagram.drawio.png`
-
----
-
-## 📝 Development Notes
-
-- H2 runs in-memory; data resets on restart.
-- Schema and seed data live in `src/main/resources/schema.sql` and `src/main/resources/data.sql`.
-- `target/` is build output only and is regenerated by the latest Maven run.
-
----
-
-## 📄 License
+## License
 
 Educational project for Microservices Architecture coursework.
