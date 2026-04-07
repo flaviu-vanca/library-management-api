@@ -23,7 +23,11 @@
   <a href="#-quick-start">🚀 Quick Start</a> ·
   <a href="#-api-overview">🔌 API</a> ·
   <a href="#-cicd-with-jenkins">🤖 CI/CD</a> ·
-  <a href="#-testing">🧪 Testing</a>
+  <a href="#-testing">🧪 Testing</a> ·
+  <a href="#-error-handling">⚠️ Errors</a> ·
+  <a href="#-documentation-map">🗺️ Docs</a> ·
+  <a href="#-development-notes">📝 Notes</a> ·
+  <a href="#-license">📄 License</a>
 </p>
 
 ---
