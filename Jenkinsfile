@@ -171,17 +171,31 @@ Install/enable the HTTP Request plugin.""")
         }
 
         stage('🚀 Deploy Locally') {
-            when {
-                branch 'master'
-            }
             steps {
                 script {
-                    docker.image("${env.APP_IMAGE}:${env.BUILD_NUMBER}").run("-p ${env.APP_PORT}:8080")
+                    def imageTag = "${env.APP_IMAGE}:${env.BUILD_NUMBER}"
+                    def deployUrl = "http://localhost:${env.APP_PORT}/"
+
+                    echo "Deploying image: ${imageTag}"
+                    echo "Target container: ${env.APP_CONTAINER}"
+                    echo "Health check URL: ${deployUrl}"
+
+                    bat """@echo off
+docker ps -a --format "{{.Names}}" | findstr /I /X "${env.APP_CONTAINER}" >nul
+if %ERRORLEVEL% EQU 0 (
+  echo Removing existing container ${env.APP_CONTAINER}
+  docker rm -f ${env.APP_CONTAINER}
+) else (
+  echo No existing container named ${env.APP_CONTAINER} found.
+)
+"""
+
+                    docker.image(imageTag).run("--name ${env.APP_CONTAINER} --restart unless-stopped -d -p ${env.APP_PORT}:8080")
 
                     retry(20) {
                         sleep time: 3, unit: 'SECONDS'
                         def response = httpRequest(
-                            url: "http://localhost:${env.APP_PORT}/",
+                            url: deployUrl,
                             validResponseCodes: '200',
                             quiet: true
                         )
