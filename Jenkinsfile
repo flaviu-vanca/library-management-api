@@ -181,11 +181,11 @@ Install/enable the HTTP Request plugin.""")
                     echo "Health check URL: ${deployUrl}"
 
                     bat """@echo off
-docker ps -a --format "{{.Names}}" | findstr /I /X "${env.APP_CONTAINER}" >nul
-if %ERRORLEVEL% EQU 0 (
+docker container inspect "${env.APP_CONTAINER}" >nul 2>&1
+if not errorlevel 1 (
   echo Removing existing container ${env.APP_CONTAINER}
   docker rm -f ${env.APP_CONTAINER}
-  if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
+  if errorlevel 1 exit /b 1
 ) else (
   echo No existing container named ${env.APP_CONTAINER} found.
 )
