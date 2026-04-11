@@ -185,9 +185,11 @@ docker ps -a --format "{{.Names}}" | findstr /I /X "${env.APP_CONTAINER}" >nul
 if %ERRORLEVEL% EQU 0 (
   echo Removing existing container ${env.APP_CONTAINER}
   docker rm -f ${env.APP_CONTAINER}
+  if %ERRORLEVEL% NEQ 0 exit /b %ERRORLEVEL%
 ) else (
   echo No existing container named ${env.APP_CONTAINER} found.
 )
+exit /b 0
 """
 
                     docker.image(imageTag).run("--name ${env.APP_CONTAINER} --restart unless-stopped -d -p ${env.APP_PORT}:8080")
