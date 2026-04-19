@@ -15,6 +15,9 @@ For concrete error payloads, use `docs/ERROR_RESPONSE_EXAMPLES.md`.
 
 ```text
 library-management-api/
+├── Dockerfile
+├── Jenkinsfile
+├── compose.yaml
 ├── pom.xml
 ├── README.md
 ├── docs/
@@ -25,6 +28,11 @@ library-management-api/
 │   ├── architecture-diagram.drawio.png
 │   ├── erd-diagram.drawio
 │   └── erd-diagram.drawio.png
+├── scripts/
+│   ├── start-cicd-stack.ps1
+│   ├── stop-cicd-stack.ps1
+│   ├── run-screencast-demo.ps1
+│   └── open-test-reports.ps1
 ├── src/
 │   ├── main/
 │   │   ├── java/com/library/api/
@@ -44,8 +52,6 @@ library-management-api/
 │   │       └── data.sql
 │   └── test/
 │       └── java/com/library/api/
-└── postman/
-    └── Library_API_Collection.json
 ```
 
 ## 🏛️ Layer Responsibilities
@@ -98,6 +104,9 @@ library-management-api/
 - API controllers: `src/main/java/com/library/api/controller/`
 - Exception handler: `src/main/java/com/library/api/exception/GlobalExceptionHandler.java`
 - Schema and seed data: `src/main/resources/schema.sql`, `src/main/resources/data.sql`
+- CI/CD pipeline: `Jenkinsfile`
+- Local CI/CD support services: `compose.yaml`
+- Assignment helper scripts: `scripts/`
 
 ## 🧹 Maintenance Rule
 
