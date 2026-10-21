@@ -1,0 +1,71 @@
+# =============================================================================
+#  Workshop 3 — SCA : Dependabot + OWASP Dependency-Check
+#  Emplacement obligatoire :  .github/workflows/sca.yml   (à la RACINE du dépôt)
+#  Secret à créer : Settings > Secrets and variables > Actions
+#      NVD_API_KEY = xxxx-xxxx-xxxx-xxxx   (gratuit : nvd.nist.gov/developers/request-an-api-key)
+# =============================================================================
+name: SCA - OWASP Dependency-Check
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+
+  sca:
+    name: OWASP Dependency-Check (JDK 21)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer JDK 21 (plugin OWASP compatible)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Mettre en cache la base NVD (évite 5-15 min à chaque run)
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp
+          key: owasp-nvd-${{ github.run_id }}
+          restore-keys: owasp-nvd-
+
+      - name: Scanner les dépendances
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          mvn -B org.owasp:dependency-check-maven:12.1.3:check \
+              -DnvdApiKey="$NVD_API_KEY" \
+              -DfailBuildOnCVSS=7 || true    # rapport produit même en cas de CVE High
+
+      - name: Afficher le résumé (nombre de vulnérabilités)
+        if: always()
+        run: |
+          if [ -f target/dependency-check-report.json ]; then
+            echo "=== Rapport OWASP généré ==="
+            grep -o '"vulnerabilities"' target/dependency-check-report.json | wc -l | xargs echo "Blocs de vulnérabilités :"
+            echo "Ouvrir l'artefact owasp-dependency-check pour le détail (HTML)."
+          else
+            echo "Rapport JSON absent — vérifier que le plugin 12.1.3 est dans <build><plugins> du pom.xml"
+          fi
+
+      - name: Archiver les rapports OWASP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owasp-dependency-check
+          path: |
+            target/dependency-check-report.html
+            target/dependency-check-report.json
+            target/dependency-check-report.xml

@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Africa/Casablanca"
+    open-pull-requests-limit: 5
+    groups:
+      spring-boot:
+        patterns: ["org.springframework.boot*"]
+    labels: ["dependencies", "dependabot"]
+    reviewers: ["OuzzikiLhoussaine"]
+    ignore:
+      - dependency-name: "org.springframework.boot"
+        update-types: ["version-update:semver-major"]

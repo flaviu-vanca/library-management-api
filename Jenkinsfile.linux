@@ -1,0 +1,214 @@
+pipeline {
+    agent any
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+        disableConcurrentBuilds()
+    }
+
+    triggers {
+        githubPush()
+    }
+
+    environment {
+        APP_CONTAINER = 'library-management-api'
+        APP_IMAGE = 'library-management-api'
+        APP_PORT = '8082'
+        SONAR_URL = 'http://localhost:9000'
+        SONAR_PROJECT_KEY = 'library-management-api'
+        MAVEN_TOOL = 'Maven3'
+        JDK25_TOOL = 'JDK25'
+        JDK21_TOOL = 'JDK21'
+    }
+
+    stages {
+
+        stage('🔍 Preflight Validation') {
+            steps {
+                script {
+                    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                    echo "📚 Library Management API - CI/CD Pipeline (Linux)"
+                    echo "👤 Triggered by: Lhoussaine / Hasna / Zayneb"
+                    echo "🔗 Build: ${BUILD_NUMBER} - Branch: ${env.GIT_BRANCH}"
+                    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                    echo ""
+                    def missingTools = []
+                    def requiredTools = [
+                        [label: 'JDK 25', name: env.JDK25_TOOL],
+                        [label: 'JDK 21', name: env.JDK21_TOOL],
+                        [label: 'Maven', name: env.MAVEN_TOOL]
+                    ]
+
+                    requiredTools.each { t ->
+                        try {
+                            def resolved = tool(t.name)
+                            echo "${t.label} tool '${t.name}' resolved at: ${resolved}"
+                        } catch (Exception ex) {
+                            echo "Failed to resolve ${t.label} tool '${t.name}': ${ex.message}"
+                            missingTools << "${t.label} -> '${t.name}'"
+                        }
+                    }
+
+                    if (missingTools) {
+                        error("""Pipeline preflight failed: required Jenkins tools are missing.
+Configure these in Manage Jenkins > Tools:
+- ${missingTools.join('\n- ')}""")
+                    }
+
+                    try {
+                        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'PRECHECK_SONAR_TOKEN')]) {
+                            echo "Credential 'sonarqube-token' is configured."
+                        }
+                    } catch (Exception ex) {
+                        error("""Pipeline preflight failed: credential 'sonarqube-token' was not found.
+Create it as Secret text in Manage Jenkins > Credentials.
+Details: ${ex.message}""")
+                    }
+
+                    try {
+                        docker
+                        echo "Docker Pipeline DSL is available."
+                    } catch (MissingPropertyException ignored) {
+                        error("""Pipeline preflight failed: Docker Pipeline support is unavailable.
+Install/enable the Docker Pipeline plugin.""")
+                    }
+
+                    try {
+                        httpRequest(
+                            url: 'http://127.0.0.1:9/',
+                            httpMode: 'HEAD',
+                            timeout: 1,
+                            validResponseCodes: '100:599',
+                            quiet: true
+                        )
+                        echo "HTTP Request step is available."
+                    } catch (NoSuchMethodError ignored) {
+                        error("Pipeline preflight failed: httpRequest step is unavailable. Install HTTP Request plugin.")
+                    } catch (MissingMethodException ignored) {
+                        error("Pipeline preflight failed: httpRequest step is unavailable. Install HTTP Request plugin.")
+                    } catch (Exception ignored) {
+                        echo "HTTP Request step is available."
+                    }
+                }
+            }
+        }
+
+        stage('⚙️ Verify Tooling') {
+            tools {
+                jdk "${JDK25_TOOL}"
+                maven "${MAVEN_TOOL}"
+            }
+            steps {
+                sh 'java -version'
+                sh 'mvn -version'
+                sh 'echo "Resolved JDK 25 at: ${JAVA_HOME}"'
+            }
+        }
+
+        stage('🧪 Build and Test - Java 25') {
+            tools {
+                jdk "${JDK25_TOOL}"
+                maven "${MAVEN_TOOL}"
+            }
+            steps {
+                sh 'mvn -B -ntp clean verify'
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'target/karate-reports/**'
+                }
+            }
+        }
+
+        stage('📊 Coverage and Static Analysis - Java 21') {
+            tools {
+                jdk "${JDK21_TOOL}"
+                maven "${MAVEN_TOOL}"
+            }
+            steps {
+                withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                    sh '''
+                        mvn -B -ntp -Pcoverage-java21 clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:4.2.0.3121:sonar \
+                        -Dsonar.host.url=$SONAR_URL \
+                        -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+                        -Dsonar.projectName="Library Management API" \
+                        -Dsonar.token=$SONAR_TOKEN \
+                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                    '''
+                }
+                // Optionnel : bloquer si Quality Gate échoue
+                // waitForQualityGate abortPipeline: true
+            }
+            post {
+                always {
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'target/site/jacoco/**'
+                }
+            }
+        }
+
+        stage('📦 Package Artifact - Java 25') {
+            tools {
+                jdk "${JDK25_TOOL}"
+                maven "${MAVEN_TOOL}"
+            }
+            steps {
+                sh 'mvn -B -ntp -DskipTests clean package'
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                }
+            }
+        }
+
+        stage('🐳 Build Docker Image') {
+            steps {
+                script {
+                    def image = docker.build("${env.APP_IMAGE}:${env.BUILD_NUMBER}")
+                    image.tag('latest')
+                }
+            }
+        }
+
+        stage('🚀 Deploy Locally') {
+            steps {
+                script {
+                    def imageTag = "${env.APP_IMAGE}:${env.BUILD_NUMBER}"
+                    def deployUrl = "http://localhost:${env.APP_PORT}/"
+
+                    echo "Deploying image: ${imageTag}"
+                    echo "Target container: ${env.APP_CONTAINER}"
+                    echo "Health check URL: ${deployUrl}"
+
+                    sh '''
+                        if docker container inspect "$APP_CONTAINER" >/dev/null 2>&1; then
+                          echo "Removing existing container $APP_CONTAINER"
+                          docker rm -f "$APP_CONTAINER"
+                        else
+                          echo "No existing container named $APP_CONTAINER found."
+                        fi
+                    '''
+
+                    docker.image(imageTag).run("--name ${env.APP_CONTAINER} --restart unless-stopped -d -p ${env.APP_PORT}:8080")
+
+                    retry(20) {
+                        sleep time: 3, unit: 'SECONDS'
+                        def response = httpRequest(
+                            url: deployUrl,
+                            validResponseCodes: '200',
+                            quiet: true
+                        )
+                        echo response.content
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            deleteDir()
+        }
+    }
+}
